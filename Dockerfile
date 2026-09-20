@@ -1,7 +1,7 @@
 FROM php:8.3-cli-alpine
 
 RUN apk add --no-cache icu-libs sqlite-libs libzip \
- && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS icu-dev libzip-dev \
+ && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS icu-dev libzip-dev sqlite-dev \
  && docker-php-ext-install -j"$(nproc)" pdo_sqlite pdo_mysql bcmath intl zip opcache \
  && apk del .build-deps
 
