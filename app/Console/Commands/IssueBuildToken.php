@@ -9,7 +9,8 @@ class IssueBuildToken extends Command
 {
     protected $signature = 'geo:issue-build-token
                             {--email=astro-build@geniuscorp.example : อีเมลของผู้ใช้ที่จะออก token ให้}
-                            {--name=astro-build : ชื่อ token}';
+                            {--name=astro-build : ชื่อ token}
+                            {--token= : ค่า token ที่กำหนดเองสำหรับ environment deployment}';
 
     protected $description = 'ออก Sanctum token แบบอ่านอย่างเดียว (content:read) สำหรับ Astro build process';
 
@@ -22,9 +23,24 @@ class IssueBuildToken extends Command
             return self::FAILURE;
         }
 
-        $user->tokens()->where('name', $this->option('name'))->delete();
+        $tokenName = $this->option('name');
+        $user->tokens()->where('name', $tokenName)->delete();
 
-        $token = $user->createToken($this->option('name'), ['content:read']);
+        $providedToken = $this->option('token');
+
+        if ($providedToken) {
+            $user->tokens()->create([
+                'name' => $tokenName,
+                'token' => hash('sha256', $providedToken),
+                'abilities' => ['content:read'],
+            ]);
+
+            $this->info('สร้าง token สำเร็จจากค่าที่กำหนดใน environment');
+
+            return self::SUCCESS;
+        }
+
+        $token = $user->createToken($tokenName, ['content:read']);
 
         $this->info('สร้าง token สำเร็จ นำค่าด้านล่างไปใส่ใน .env ของโปรเจกต์ Astro (API_TOKEN=...)');
         $this->newLine();
