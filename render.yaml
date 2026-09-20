@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: geniuscorp-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        value: https://geniuscorp-api.onrender.com
+      - key: APP_KEY
+        sync: false          # ใส่ค่าจาก `php artisan key:generate --show` ใน Dashboard
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DB_DATABASE
+        value: /var/www/html/database/database.sqlite
+      - key: SEED_ON_BOOT
+        value: "true"        # สร้างข้อมูลคอร์สใหม่ทุกครั้งที่ container เกิดใหม่
+      - key: BUILD_TOKEN
+        sync: false          # ค่าเดียวกับ API_TOKEN ฝั่ง Astro (สุ่มยาว 40 ตัวอักษรขึ้นไป)
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync          # แผนฟรีรัน queue worker ไม่ได้ (ตัด delay ใน TriggerRebuild ด้วย)
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: REBUILD_ENABLED
+        value: "false"       # เปิดเมื่อสาธิต auto-rebuild พร้อมตั้ง REBUILD_* ที่เหลือ
